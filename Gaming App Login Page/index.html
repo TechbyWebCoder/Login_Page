@@ -1,0 +1,731 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEXUS ARENA - Player Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Righteous:wght@400&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --neon-purple: #b300ff;
+            --neon-cyan: #00ffff;
+            --neon-pink: #ff006e;
+            --neon-yellow: #ffff00;
+            --neon-green: #39ff14;
+            --dark-bg: #0a0014;
+            --dark-card: #1a0033;
+            --text-white: #ffffff;
+            --text-gray: #b0b0b0;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'Roboto', sans-serif;
+            background: linear-gradient(135deg, #0a0014 0%, #1a0033 25%, #2d0052 50%, #1a0033 75%, #0a0014 100%);
+            background-size: 400% 400%;
+            animation: gradientShift 20s ease infinite;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            color: var(--text-white);
+        }
+
+        @keyframes gradientShift {
+            0% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+            100% {
+                background-position: 0% 50%;
+            }
+        }
+
+        /* Animated grid background */
+        .grid-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(0deg, rgba(0, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(179, 0, 255, 0.03) 1px, transparent 1px);
+            background-size: 40px 40px;
+            pointer-events: none;
+            z-index: 0;
+            animation: gridMove 20s linear infinite;
+        }
+
+        @keyframes gridMove {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(40px);
+            }
+        }
+
+        /* Animated particles */
+        .particles {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: var(--neon-cyan);
+            border-radius: 50%;
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: particle-float 8s infinite linear;
+        }
+
+        .particle:nth-child(1) { left: 10%; top: 20%; animation-delay: 0s; }
+        .particle:nth-child(2) { left: 20%; top: 50%; animation-delay: 1s; --neon-cyan: #ff006e; }
+        .particle:nth-child(3) { left: 30%; top: 70%; animation-delay: 2s; --neon-cyan: #b300ff; }
+        .particle:nth-child(4) { left: 60%; top: 30%; animation-delay: 3s; --neon-cyan: #39ff14; }
+        .particle:nth-child(5) { left: 80%; top: 60%; animation-delay: 4s; --neon-cyan: #ffff00; }
+        .particle:nth-child(6) { left: 50%; top: 80%; animation-delay: 5s; --neon-cyan: #00ffff; }
+
+        @keyframes particle-float {
+            0% {
+                transform: translateY(0) translateX(0);
+                opacity: 0;
+            }
+            10% {
+                opacity: 1;
+            }
+            90% {
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100vh) translateX(100px);
+                opacity: 0;
+            }
+        }
+
+        /* Ambient light orbs */
+        .ambient-orb {
+            position: fixed;
+            border-radius: 50%;
+            pointer-events: none;
+            z-index: 1;
+            filter: blur(60px);
+        }
+
+        .orb-1 {
+            width: 300px;
+            height: 300px;
+            background: radial-gradient(circle, rgba(179, 0, 255, 0.4), transparent);
+            top: -100px;
+            right: -100px;
+            animation: orb-move 15s ease-in-out infinite;
+        }
+
+        .orb-2 {
+            width: 250px;
+            height: 250px;
+            background: radial-gradient(circle, rgba(0, 255, 255, 0.3), transparent);
+            bottom: -50px;
+            left: 10%;
+            animation: orb-move 18s ease-in-out infinite reverse;
+        }
+
+        @keyframes orb-move {
+            0%, 100% {
+                transform: translate(0, 0);
+            }
+            50% {
+                transform: translate(50px, 50px);
+            }
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        /* Login card */
+        .login-card {
+            background: rgba(26, 0, 51, 0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 2px solid var(--neon-purple);
+            border-radius: 12px;
+            padding: 50px 40px;
+            box-shadow: 
+                0 0 40px rgba(179, 0, 255, 0.5),
+                0 0 80px rgba(0, 255, 255, 0.2),
+                inset 0 0 40px rgba(179, 0, 255, 0.1);
+            position: relative;
+            overflow: hidden;
+            animation: cardPulse 3s ease-in-out infinite;
+        }
+
+        @keyframes cardPulse {
+            0%, 100% {
+                box-shadow: 
+                    0 0 40px rgba(179, 0, 255, 0.5),
+                    0 0 80px rgba(0, 255, 255, 0.2),
+                    inset 0 0 40px rgba(179, 0, 255, 0.1);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px rgba(179, 0, 255, 0.7),
+                    0 0 100px rgba(0, 255, 255, 0.3),
+                    inset 0 0 50px rgba(179, 0, 255, 0.15);
+            }
+        }
+
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(0, 255, 255, 0.1) 0%, transparent 50%, rgba(179, 0, 255, 0.1) 100%);
+            pointer-events: none;
+            border-radius: 10px;
+        }
+
+        .header {
+            margin-bottom: 40px;
+            text-align: center;
+            animation: slideDown 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);
+            position: relative;
+            z-index: 2;
+        }
+
+        @keyframes slideDown {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .game-title {
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 48px;
+            font-weight: 900;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 8px;
+            text-shadow: 0 0 20px rgba(0, 255, 255, 0.8);
+            filter: drop-shadow(0 0 10px rgba(179, 0, 255, 0.6));
+            animation: textGlow 3s ease-in-out infinite;
+            letter-spacing: 2px;
+        }
+
+        @keyframes textGlow {
+            0%, 100% {
+                text-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 40px rgba(179, 0, 255, 0.4);
+                filter: drop-shadow(0 0 10px rgba(179, 0, 255, 0.6));
+            }
+            50% {
+                text-shadow: 0 0 30px rgba(0, 255, 255, 1), 0 0 60px rgba(179, 0, 255, 0.6);
+                filter: drop-shadow(0 0 20px rgba(179, 0, 255, 0.8));
+            }
+        }
+
+        .subtitle {
+            font-family: 'Righteous', sans-serif;
+            font-size: 14px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: slideUp 0.8s ease-out both;
+            position: relative;
+            z-index: 2;
+        }
+
+        .form-group:nth-child(1) { animation-delay: 0.1s; }
+        .form-group:nth-child(2) { animation-delay: 0.15s; }
+        .form-group:nth-child(3) { animation-delay: 0.2s; }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            font-family: 'Righteous', sans-serif;
+            font-size: 12px;
+            color: var(--neon-yellow);
+            margin-bottom: 8px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 8px var(--neon-yellow);
+        }
+
+        input {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 0, 0, 0.6);
+            border: 2px solid rgba(0, 255, 255, 0.3);
+            border-radius: 6px;
+            font-family: 'Roboto', sans-serif;
+            font-size: 14px;
+            color: var(--text-white);
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            outline: none;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(0, 255, 255, 0.1);
+        }
+
+        input::placeholder {
+            color: rgba(176, 176, 176, 0.5);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        input:focus {
+            border-color: var(--neon-cyan);
+            background: rgba(0, 255, 255, 0.05);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.5),
+                0 0 40px rgba(0, 255, 255, 0.2),
+                inset 0 0 20px rgba(0, 255, 255, 0.05);
+            transform: translateY(-3px);
+        }
+
+        .remember-forgot {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            font-size: 12px;
+            position: relative;
+            z-index: 2;
+            animation: fadeIn 0.8s ease-out 0.25s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: var(--neon-cyan);
+            box-shadow: 0 0 10px rgba(0, 255, 255, 0.3);
+        }
+
+        .checkbox-label {
+            color: var(--text-gray);
+            font-weight: 600;
+            text-transform: none;
+            letter-spacing: 0;
+            text-shadow: none;
+        }
+
+        .forgot-link {
+            color: var(--neon-pink);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 8px var(--neon-pink);
+        }
+
+        .forgot-link:hover {
+            color: var(--neon-yellow);
+            text-shadow: 0 0 12px var(--neon-yellow);
+        }
+
+        .btn-login {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, var(--neon-purple), var(--neon-pink));
+            color: var(--text-white);
+            border: 2px solid var(--neon-cyan);
+            border-radius: 6px;
+            font-family: 'Fredoka One', sans-serif;
+            font-size: 16px;
+            font-weight: 900;
+            letter-spacing: 2px;
+            cursor: pointer;
+            text-transform: uppercase;
+            transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.6),
+                0 0 40px rgba(179, 0, 255, 0.5),
+                0 8px 16px rgba(0, 0, 0, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+            margin-bottom: 20px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 0.8s ease-out 0.3s both;
+            z-index: 2;
+        }
+
+        .btn-login::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(135deg, var(--neon-cyan), var(--neon-purple), var(--neon-pink), var(--neon-cyan));
+            background-size: 300% 300%;
+            border-radius: 6px;
+            z-index: -1;
+            opacity: 0;
+            transition: opacity 0.4s ease;
+            animation: borderGlow 3s linear infinite paused;
+        }
+
+        @keyframes borderGlow {
+            0%, 100% {
+                background-position: 0% 50%;
+            }
+            50% {
+                background-position: 100% 50%;
+            }
+        }
+
+        .btn-login:hover {
+            transform: translateY(-4px);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 255, 0.8),
+                0 0 60px rgba(179, 0, 255, 0.7),
+                0 12px 24px rgba(0, 0, 0, 0.7),
+                inset 0 0 30px rgba(255, 255, 255, 0.15);
+            letter-spacing: 3px;
+        }
+
+        .btn-login:active {
+            transform: translateY(-2px);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.6),
+                0 0 40px rgba(179, 0, 255, 0.5),
+                inset 0 0 20px rgba(255, 255, 255, 0.1);
+        }
+
+        .divider {
+            position: relative;
+            margin: 30px 0;
+            text-align: center;
+            font-family: 'Righteous', sans-serif;
+            font-size: 11px;
+            color: var(--neon-cyan);
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            text-shadow: 0 0 10px var(--neon-cyan);
+            animation: fadeIn 0.8s ease-out 0.35s both;
+            z-index: 2;
+            position: relative;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 30%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--neon-purple), transparent);
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 14px;
+            animation: fadeIn 0.8s ease-out 0.4s both;
+            position: relative;
+            z-index: 2;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 14px;
+            border: 2px solid var(--neon-green);
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            color: var(--neon-green);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 11px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 15px rgba(57, 255, 20, 0.3);
+            position: relative;
+            font-family: 'Righteous', sans-serif;
+        }
+
+        .social-btn:hover {
+            border-color: var(--neon-cyan);
+            color: var(--neon-cyan);
+            background: rgba(0, 255, 255, 0.1);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 255, 0.6),
+                0 0 40px rgba(0, 255, 255, 0.3),
+                0 0 60px rgba(179, 0, 255, 0.2);
+            transform: translateY(-3px);
+            text-shadow: 0 0 10px var(--neon-cyan);
+        }
+
+        .signup-link {
+            text-align: center;
+            font-size: 12px;
+            color: var(--text-gray);
+            animation: fadeIn 0.8s ease-out 0.45s both;
+            position: relative;
+            z-index: 2;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .signup-link a {
+            color: var(--neon-yellow);
+            text-decoration: none;
+            font-weight: 700;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 10px var(--neon-yellow);
+        }
+
+        .signup-link a:hover {
+            color: var(--neon-cyan);
+            text-shadow: 0 0 12px var(--neon-cyan);
+        }
+
+        .success-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(57, 255, 20, 0.1);
+            border: 2px solid var(--neon-green);
+            padding: 16px 28px;
+            border-radius: 6px;
+            display: none;
+            align-items: center;
+            gap: 12px;
+            color: var(--neon-green);
+            z-index: 1000;
+            animation: slideUp 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+            box-shadow: 
+                0 0 20px rgba(57, 255, 20, 0.5),
+                0 0 40px rgba(57, 255, 20, 0.2);
+            font-family: 'Righteous', sans-serif;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        @media (max-width: 480px) {
+            .game-title {
+                font-size: 36px;
+            }
+
+            .login-card {
+                padding: 40px 30px;
+            }
+
+            .container {
+                padding: 16px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="grid-bg"></div>
+    
+    <div class="ambient-orb orb-1"></div>
+    <div class="ambient-orb orb-2"></div>
+
+    <div class="particles">
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+        <div class="particle"></div>
+    </div>
+
+    <div class="container">
+        <div class="login-card">
+            <div class="header">
+                <div class="game-title">NEXUS</div>
+                <div class="subtitle">⚡ Enter the Arena ⚡</div>
+            </div>
+
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Player ID</label>
+                    <input 
+                        type="text" 
+                        id="username" 
+                        placeholder="Enter your gamertag"
+                        required
+                    >
+                </div>
+
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input 
+                        type="password" 
+                        id="password" 
+                        placeholder="••••••••••••••••"
+                        required
+                    >
+                </div>
+
+                <div class="remember-forgot">
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="remember">
+                        <label for="remember" class="checkbox-label">Remember Login</label>
+                    </div>
+                    <a href="#" class="forgot-link">Forgot?</a>
+                </div>
+
+                <button type="submit" class="btn-login">⚡ ENTER GAME</button>
+            </form>
+
+            <div class="divider">Or Login Via</div>
+
+            <div class="social-login">
+                <button class="social-btn" type="button" title="Discord">Discord</button>
+                <button class="social-btn" type="button" title="Twitch">Twitch</button>
+                <button class="social-btn" type="button" title="Steam">Steam</button>
+            </div>
+
+            <p class="signup-link">
+                New Player? <a href="#">Create Account</a>
+            </p>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMsg">
+        <span>⚡</span>
+        <span>WELCOME BACK, PLAYER!</span>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const successMsg = document.getElementById('successMsg');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+
+            if (username && password) {
+                // Show success message
+                successMsg.style.display = 'flex';
+                
+                // Reset form
+                form.reset();
+                
+                // Hide success message after 4 seconds
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 4000);
+            }
+        });
+
+        // Add glow effect on input
+        const inputs = document.querySelectorAll('input[type="text"], input[type="password"]');
+        inputs.forEach(input => {
+            input.addEventListener('focus', function() {
+                this.style.boxShadow = 
+                    '0 0 25px rgba(0, 255, 255, 0.6), 0 0 50px rgba(0, 255, 255, 0.3), inset 0 0 20px rgba(0, 255, 255, 0.1)';
+            });
+
+            input.addEventListener('blur', function() {
+                this.style.boxShadow = '0 0 15px rgba(0, 255, 255, 0.1)';
+            });
+        });
+
+        // Prevent default on social buttons
+        document.querySelectorAll('.social-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        // Add particle mouse tracking effect
+        document.addEventListener('mousemove', (e) => {
+            const particles = document.querySelectorAll('.particle');
+            particles.forEach((particle, index) => {
+                const speed = 5 + (index * 2);
+                const x = (e.clientX / window.innerWidth) * speed;
+                const y = (e.clientY / window.innerHeight) * speed;
+                particle.style.transform = `translate(${x}px, ${y}px)`;
+            });
+        });
+    </script>
+</body>
+</html>
