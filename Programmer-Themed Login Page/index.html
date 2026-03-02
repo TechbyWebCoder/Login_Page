@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CodeVault - Developer Access Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --terminal-green: #00ff41;
+            --terminal-dark: #0a0e27;
+            --terminal-bg: #0f1419;
+            --accent-green: #39ff14;
+            --warn-yellow: #ffff00;
+            --error-red: #ff0066;
+            --code-blue: #00aaff;
+            --text-gray: #888888;
+        }
+
+        html, body {
+            width: 100%;
+            height: 100%;
+        }
+
+        body {
+            font-family: 'IBM Plex Mono', monospace;
+            background: var(--terminal-dark);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            overflow: hidden;
+            position: relative;
+            color: var(--terminal-green);
+            cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32"><rect x="14" y="2" width="4" height="12" fill="%2300ff41"/><rect x="2" y="14" width="12" height="4" fill="%2300ff41"/><rect x="16" y="14" width="12" height="4" fill="%2300ff41"/><rect x="14" y="18" width="4" height="12" fill="%2300ff41"/></svg>') 16 16, auto;
+        }
+
+        /* Animated code background */
+        .code-background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: var(--terminal-bg);
+            z-index: 0;
+            overflow: hidden;
+            font-size: 12px;
+            line-height: 1.5;
+            color: rgba(0, 255, 65, 0.08);
+            white-space: pre;
+            word-wrap: break-word;
+            pointer-events: none;
+            animation: codeScroll 30s linear infinite;
+        }
+
+        @keyframes codeScroll {
+            0% {
+                transform: translateY(0);
+            }
+            100% {
+                transform: translateY(100%);
+            }
+        }
+
+        /* Matrix rain effect */
+        .matrix-rain {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 1;
+            background: 
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 255, 65, 0.03),
+                    rgba(0, 255, 65, 0.03) 2px,
+                    transparent 2px,
+                    transparent 4px
+                );
+            animation: flicker 0.15s infinite;
+        }
+
+        @keyframes flicker {
+            0% {
+                opacity: 0.9;
+            }
+            50% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0.9;
+            }
+        }
+
+        /* Grid overlay */
+        .grid-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(0deg, transparent 24%, rgba(0, 255, 65, 0.05) 25%, rgba(0, 255, 65, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 65, 0.05) 75%, rgba(0, 255, 65, 0.05) 76%, transparent 77%, transparent),
+                linear-gradient(90deg, transparent 24%, rgba(0, 255, 65, 0.05) 25%, rgba(0, 255, 65, 0.05) 26%, transparent 27%, transparent 74%, rgba(0, 255, 65, 0.05) 75%, rgba(0, 255, 65, 0.05) 76%, transparent 77%, transparent);
+            background-size: 50px 50px;
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        .container {
+            position: relative;
+            z-index: 10;
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+        }
+
+        /* Terminal window */
+        .terminal-window {
+            background: rgba(15, 20, 25, 0.9);
+            border: 2px solid var(--terminal-green);
+            border-radius: 8px;
+            box-shadow: 
+                0 0 40px rgba(0, 255, 65, 0.3),
+                0 0 80px rgba(0, 255, 65, 0.15),
+                inset 0 0 40px rgba(0, 255, 65, 0.05);
+            overflow: hidden;
+            animation: terminalGlow 2s ease-in-out infinite;
+        }
+
+        @keyframes terminalGlow {
+            0%, 100% {
+                box-shadow: 
+                    0 0 40px rgba(0, 255, 65, 0.3),
+                    0 0 80px rgba(0, 255, 65, 0.15),
+                    inset 0 0 40px rgba(0, 255, 65, 0.05);
+            }
+            50% {
+                box-shadow: 
+                    0 0 50px rgba(0, 255, 65, 0.4),
+                    0 0 100px rgba(0, 255, 65, 0.2),
+                    inset 0 0 50px rgba(0, 255, 65, 0.08);
+            }
+        }
+
+        /* Terminal header */
+        .terminal-header {
+            background: linear-gradient(180deg, rgba(0, 255, 65, 0.1) 0%, transparent 100%);
+            padding: 12px 16px;
+            border-bottom: 1px solid rgba(0, 255, 65, 0.2);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            color: var(--terminal-green);
+            text-shadow: 0 0 10px var(--terminal-green);
+        }
+
+        .header-title {
+            font-weight: 700;
+            letter-spacing: 2px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 8px;
+        }
+
+        .control-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .control-btn:nth-child(1) {
+            background: #ff5f56;
+        }
+
+        .control-btn:nth-child(2) {
+            background: #ffbd2e;
+        }
+
+        .control-btn:nth-child(3) {
+            background: #27c93f;
+            box-shadow: 0 0 10px #27c93f;
+        }
+
+        /* Terminal content */
+        .terminal-content {
+            padding: 32px;
+            position: relative;
+        }
+
+        .prompt {
+            font-size: 13px;
+            color: var(--terminal-green);
+            text-shadow: 0 0 10px var(--terminal-green);
+            margin-bottom: 24px;
+            animation: typewriter 1.5s steps(40, end) 0.5s both;
+        }
+
+        @keyframes typewriter {
+            from {
+                width: 0;
+                opacity: 0;
+            }
+            to {
+                width: 100%;
+                opacity: 1;
+            }
+        }
+
+        .prompt-text {
+            display: inline;
+        }
+
+        .prompt-cursor {
+            display: inline-block;
+            width: 2px;
+            height: 1em;
+            background: var(--terminal-green);
+            margin-left: 4px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 49% {
+                opacity: 1;
+            }
+            50%, 100% {
+                opacity: 0;
+            }
+        }
+
+        h1 {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--terminal-green);
+            margin-bottom: 8px;
+            text-shadow: 0 0 10px var(--terminal-green);
+            letter-spacing: 1px;
+            animation: fadeIn 1s ease-out 0.5s both;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+
+        .subtitle {
+            font-size: 11px;
+            color: var(--text-gray);
+            margin-bottom: 28px;
+            letter-spacing: 0.5px;
+            animation: fadeIn 1s ease-out 0.6s both;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+            animation: slideUp 0.8s ease-out both;
+        }
+
+        .form-group:nth-child(2) { animation-delay: 0.7s; }
+        .form-group:nth-child(3) { animation-delay: 0.75s; }
+        .form-group:nth-child(4) { animation-delay: 0.8s; }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        label {
+            display: block;
+            font-size: 11px;
+            color: var(--code-blue);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            text-shadow: 0 0 5px var(--code-blue);
+        }
+
+        input {
+            width: 100%;
+            padding: 12px 14px;
+            background: rgba(0, 0, 0, 0.5);
+            border: 1.5px solid var(--terminal-green);
+            border-radius: 4px;
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            color: var(--terminal-green);
+            transition: all 0.3s ease;
+            outline: none;
+            text-shadow: 0 0 10px var(--terminal-green);
+            box-shadow: inset 0 0 20px rgba(0, 255, 65, 0.05);
+        }
+
+        input::placeholder {
+            color: var(--text-gray);
+            text-shadow: none;
+        }
+
+        input:focus {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 65, 0.05);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.4),
+                0 0 40px rgba(0, 255, 65, 0.2),
+                inset 0 0 20px rgba(0, 255, 65, 0.1);
+            transform: translateY(-2px);
+        }
+
+        input:focus::placeholder {
+            opacity: 0;
+        }
+
+        .form-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            font-size: 11px;
+            animation: fadeIn 1s ease-out 0.85s both;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        input[type="checkbox"] {
+            width: 14px;
+            height: 14px;
+            cursor: pointer;
+            accent-color: var(--terminal-green);
+            box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+        }
+
+        .checkbox-label {
+            color: var(--text-gray);
+            cursor: pointer;
+            text-shadow: none;
+            font-size: 11px;
+        }
+
+        .forgot-link {
+            color: var(--code-blue);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            text-shadow: 0 0 5px var(--code-blue);
+        }
+
+        .forgot-link:hover {
+            color: var(--terminal-green);
+            text-shadow: 0 0 10px var(--terminal-green);
+        }
+
+        .btn-submit {
+            width: 100%;
+            padding: 14px 16px;
+            background: rgba(0, 255, 65, 0.1);
+            border: 1.5px solid var(--terminal-green);
+            border-radius: 4px;
+            color: var(--terminal-green);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: all 0.4s ease;
+            text-shadow: 0 0 10px var(--terminal-green);
+            box-shadow: 
+                0 0 20px rgba(0, 255, 65, 0.3),
+                inset 0 0 20px rgba(0, 255, 65, 0.05);
+            margin-bottom: 16px;
+            position: relative;
+            overflow: hidden;
+            animation: fadeIn 1s ease-out 0.9s both;
+        }
+
+        .btn-submit::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(0, 255, 65, 0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        .btn-submit:hover::before {
+            left: 100%;
+        }
+
+        .btn-submit:hover {
+            background: rgba(0, 255, 65, 0.15);
+            border-color: var(--accent-green);
+            box-shadow: 
+                0 0 30px rgba(0, 255, 65, 0.5),
+                0 0 60px rgba(0, 255, 65, 0.3),
+                inset 0 0 30px rgba(0, 255, 65, 0.1);
+            transform: translateY(-2px);
+        }
+
+        .btn-submit:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-gray);
+            margin: 20px 0;
+            position: relative;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            animation: fadeIn 1s ease-out 0.95s both;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            width: 35%;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--terminal-green), transparent);
+        }
+
+        .divider::before {
+            left: 0;
+        }
+
+        .divider::after {
+            right: 0;
+        }
+
+        .alt-login {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+            animation: fadeIn 1s ease-out 1s both;
+        }
+
+        .alt-btn {
+            flex: 1;
+            padding: 10px;
+            background: rgba(0, 255, 65, 0.05);
+            border: 1px solid rgba(0, 255, 65, 0.3);
+            border-radius: 4px;
+            color: var(--terminal-green);
+            font-family: 'IBM Plex Mono', monospace;
+            font-size: 10px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-shadow: 0 0 8px var(--terminal-green);
+        }
+
+        .alt-btn:hover {
+            background: rgba(0, 255, 65, 0.15);
+            border-color: var(--terminal-green);
+            box-shadow: 0 0 15px rgba(0, 255, 65, 0.3);
+            transform: translateY(-2px);
+        }
+
+        .signup-text {
+            text-align: center;
+            font-size: 11px;
+            color: var(--text-gray);
+            animation: fadeIn 1s ease-out 1.05s both;
+        }
+
+        .signup-link {
+            color: var(--terminal-green);
+            text-decoration: none;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            text-shadow: 0 0 10px var(--terminal-green);
+        }
+
+        .signup-link:hover {
+            color: var(--accent-green);
+            text-shadow: 0 0 15px var(--accent-green);
+        }
+
+        .success-message {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 255, 65, 0.1);
+            border: 1.5px solid var(--terminal-green);
+            padding: 14px 24px;
+            border-radius: 4px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            color: var(--terminal-green);
+            font-size: 12px;
+            font-weight: 700;
+            z-index: 1000;
+            animation: slideUp 0.5s ease-out;
+            box-shadow: 0 0 30px rgba(0, 255, 65, 0.4);
+            text-shadow: 0 0 10px var(--terminal-green);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 16px;
+            }
+
+            .terminal-content {
+                padding: 24px;
+            }
+
+            h1 {
+                font-size: 18px;
+            }
+
+            .prompt {
+                font-size: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="code-background">const login = async (credentials) => {
+  if (credentials.valid) {
+    return await authenticate(credentials);
+  } else {
+    throw new Error("Invalid credentials");
+  }
+};
+
+function encrypt(data, key) {
+  const cipher = createCipher(key);
+  return cipher.update(data, 'utf8', 'hex');
+}
+
+class AccessControl {
+  constructor(permissions) {
+    this.permissions = permissions;
+  }
+  
+  validate(resource) {
+    return this.permissions.includes(resource);
+  }
+}
+
+const session = {
+  token: generateToken(),
+  expires: Date.now() + 3600000,
+  user: fetchUser()
+};
+
+function initializeConnection() {
+  const socket = new WebSocket('wss://secure.server');
+  socket.onopen = handleConnect;
+  socket.onmessage = handleData;
+}
+
+async function verifyTwoFactor(code) {
+  const response = await fetch('/api/2fa/verify');
+  return response.json();
+}</div>
+
+    <div class="matrix-rain"></div>
+    <div class="grid-overlay"></div>
+
+    <div class="container">
+        <div class="terminal-window">
+            <div class="terminal-header">
+                <div class="header-title">CodeVault Security Terminal</div>
+                <div class="header-controls">
+                    <div class="control-btn"></div>
+                    <div class="control-btn"></div>
+                    <div class="control-btn"></div>
+                </div>
+            </div>
+
+            <div class="terminal-content">
+                <div class="prompt">
+                    <span class="prompt-text">$ ./access_portal --login</span>
+                    <span class="prompt-cursor"></span>
+                </div>
+
+                <h1>SECURE LOGIN</h1>
+                <p class="subtitle">// Developer Access Portal v2.4.1</p>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="username">Username / Email</label>
+                        <input 
+                            type="text" 
+                            id="username" 
+                            placeholder="developer@example.com"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            placeholder="••••••••••••••••"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-actions">
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="remember">
+                            <label for="remember" class="checkbox-label">Keep Session</label>
+                        </div>
+                        <a href="#" class="forgot-link">// Forgot password?</a>
+                    </div>
+
+                    <button type="submit" class="btn-submit">&gt; AUTHENTICATE</button>
+                </form>
+
+                <div class="divider">or connect via</div>
+
+                <div class="alt-login">
+                    <button class="alt-btn" type="button">GitHub</button>
+                    <button class="alt-btn" type="button">GitLab</button>
+                    <button class="alt-btn" type="button">Dev.To</button>
+                </div>
+
+                <p class="signup-text">
+                    No access yet? <a href="#" class="signup-link">Request Credentials</a>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="success-message" id="successMsg">
+        <span>✓</span>
+        <span>Access Granted - Welcome</span>
+    </div>
+
+    <script>
+        const form = document.getElementById('loginForm');
+        const successMsg = document.getElementById('successMsg');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+
+        form.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            if (usernameInput.value && passwordInput.value) {
+                successMsg.style.display = 'flex';
+                form.reset();
+                
+                setTimeout(() => {
+                    successMsg.style.display = 'none';
+                }, 3500);
+            }
+        });
+
+        // Prevent default on alt buttons
+        document.querySelectorAll('.alt-btn').forEach(btn => {
+            btn.addEventListener('click', function(e) {
+                e.preventDefault();
+            });
+        });
+
+        // Terminal typing effect on load
+        const prompt = document.querySelector('.prompt-text');
+        const originalText = prompt.textContent;
+        prompt.textContent = '';
+        let index = 0;
+
+        function typePrompt() {
+            if (index < originalText.length) {
+                prompt.textContent += originalText[index];
+                index++;
+                setTimeout(typePrompt, 40);
+            }
+        }
+
+        // Delayed start for prompt typing
+        setTimeout(typePrompt, 300);
+
+        // Add focus glow effect
+        [usernameInput, passwordInput].forEach(input => {
+            input.addEventListener('focus', function() {
+                this.parentElement.style.animation = 'none';
+            });
+        });
+    </script>
+</body>
+</html>
